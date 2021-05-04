@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(camera-stream-callback-sample)
+project(dji_driver_WebRTC)
 
 find_package( OpenCV REQUIRED)
 
