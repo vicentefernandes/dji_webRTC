@@ -24,8 +24,7 @@ public:
 
     };
 
-  ~DJIDriver()
-  {
+  ~DJIDriver(){
     if (_cam_token == "FPV_CAM")
     {
       _vehicle->advancedSensing->stopFPVCameraStream();
@@ -36,42 +35,36 @@ public:
     }
   };
 
-  bool setup(const std::string& cam_token)
-  {
+  bool setup(const std::string& cam_token){
     _vehicle = _linuxEnvironment.getVehicle();
     const char* acm_dev =
       _linuxEnvironment.getEnvironment()->getDeviceAcm().c_str();
     _vehicle->advancedSensing->setAcmDevicePath(acm_dev);
     _cam_token = cam_token;
-    if (_vehicle == nullptr)
-    {
+    if (_vehicle == nullptr){
       std::cout << "Vehicle not initialized, exiting.\n";
       return false;
     }
     return true;
   };
 
-  void startCapture(uint timeout_secs = 3)
-  {
+  void startCapture(uint timeout_secs = 3){
     std::thread(&DJIDriver::startCapture_func, this).detach();
     std::this_thread::sleep_for(std::chrono::seconds(timeout_secs));
   }
 
-  void stopCapture(uint timeout_secs = 6)
-  {
+  void stopCapture(uint timeout_secs = 6){
     _capture = false;
     std::this_thread::sleep_for(std::chrono::seconds(timeout_secs));
   }
 
-  CameraRGBImage get_next_frame()
-  {
+  CameraRGBImage get_next_frame(){
     const std::lock_guard<std::mutex> lock(_mtx);
     return _current_img_rgb;
   };
 
 private:
-  static void prepare_image_cb(CameraRGBImage img, void* p)
-  {
+  static void prepare_image_cb(CameraRGBImage img, void* p){
     CameraRGBImage* obj = reinterpret_cast<CameraRGBImage*>(p);
     /// const std::lock_guard<std::mutex> lock(_mtx);
     // TODO LOCK
@@ -80,8 +73,7 @@ private:
     *obj = std::move(img);
   };
 
-  void startCapture_func()
-  {
+  void startCapture_func(){
     _capture = true;
     if (_cam_token == "FPV_CAM")
     {
