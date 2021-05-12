@@ -217,11 +217,16 @@ cb_need_data (GstElement *appsrc,
   static GstClockTime now;
   
 
-  auto img = dji->get_next_frame();
-  size = img.height*img.width*3;
+//  auto img = dji->get_next_frame();
+//  size = img.height*img.width*3;
+  //g_print("%dx%d", img.width, img.height);
+
+  auto h264bufimg = get_next_frame_h264();
+  auto img = h264bufimg.__buf;
+  size = h264bufimg.__bufLen;
 
 
-  g_print("%dx%d", img.width, img.height);
+
 
   //Mat frame(img.height, img.width, CV_8UC3, img.rawData.data(), img.width*3);
   //cvtColor(frame, frame, COLOR_RGB2BGR);
@@ -236,7 +241,8 @@ cb_need_data (GstElement *appsrc,
 
 
 
-  buffer = gst_buffer_new_wrapped_full( (GstMemoryFlags) 0, (gpointer)(img.rawData.data()), size, 0, size, NULL, NULL /*buffer_destroy*/ );
+  ///buffer = gst_buffer_new_wrapped_full( (GstMemoryFlags) 0, (gpointer)(img.rawData.data()), size, 0, size, NULL, NULL /*buffer_destroy*/ );
+  buffer = gst_buffer_new_wrapped_full( (GstMemoryFlags) 0, (gpointer)(img), size, 0, size, NULL, NULL /*buffer_destroy*/ );
 
 
 
@@ -279,7 +285,7 @@ create_receiver_entry (SoupWebsocketConnection * connection)
   receiver_entry->pipeline =
       gst_parse_launch ("webrtcbin name=webrtcbin stun-server=stun://"
       STUN_SERVER " "
-      "appsrc name=mysource ! videorate ! video/x-raw,width=1920,height=1080,framerate=25/1 ! videoconvert ! queue max-size-buffers=1 ! x264enc bitrate=10000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue max-size-time=100000000 ! h264parse ! "
+      "appsrc name=mysource ! video/x-h264,profile=constrained-baseline ! queue max-size-time=100000000 ! h264parse ! "
       "rtph264pay config-interval=1 name=payloader ! "
       "application/x-rtp,media=video,encoding-name=H264,payload="
       RTP_PAYLOAD_TYPE " ! webrtcbin. ", &error);
@@ -297,11 +303,11 @@ create_receiver_entry (SoupWebsocketConnection * connection)
   
   
       g_object_set(G_OBJECT(myappsrc), "caps",
-                 gst_caps_new_simple("video/x-raw",
-                                     "format", G_TYPE_STRING, "RGB",
+                 gst_caps_new_simple("video/x-h264",
+                                     "format", G_TYPE_STRING, "I420",
                                      "width", G_TYPE_INT, 1920,
                                      "height", G_TYPE_INT, 1080,
-                                     "framerate", GST_TYPE_FRACTION, 0, 25,
+                                     "framerate", GST_TYPE_FRACTION, 25, 1,
                                      NULL),
                  NULL);
   
@@ -683,7 +689,7 @@ main (int argc, char *argv[])
 
 /////////////////////////////
   dji = new DJIDriver(argc, argv);
-  dji->setup("MAIN_CAM");
+  dji->setup("MAIN_CAM_H264_1");
   dji->startCapture();
   ////////////////////////////
 

@@ -15,6 +15,35 @@ using namespace cv;
 using namespace DJI::OSDK;
 using namespace std;
 
+
+
+
+
+struct h264Img {
+  uint8_t* __buf ;
+  int __bufLen ;  
+};
+
+
+struct h264Img myH264Img;
+
+
+void liveViewSampleCb(uint8_t* buf, int bufLen, void* userData) {
+
+  cout << "liveViewSampleCb ..." << std::endl;
+  myH264Img.__buf = buf;
+  myH264Img.__bufLen = bufLen;
+
+}
+
+
+struct h264Img get_next_frame_h264(){
+  return myH264Img;
+}
+
+
+
+
 class DJIDriver
 {
 public:
@@ -47,6 +76,7 @@ public:
     }
     return true;
   };
+
 
   void startCapture(uint timeout_secs = 3){
     std::thread(&DJIDriver::startCapture_func, this).detach();
@@ -85,6 +115,15 @@ private:
       auto camResult = _vehicle->advancedSensing->startMainCameraStream(
         &prepare_image_cb, (void*)&this->_current_img_rgb);
     }
+    else if (_cam_token == "MAIN_CAM_H264_1")
+    {
+
+     auto camResult =  _vehicle->advancedSensing->startH264Stream(LiveView::OSDK_CAMERA_POSITION_NO_1, liveViewSampleCb, nullptr);
+    
+    }
+
+
+
     else
       std::runtime_error("Invalid Camera token [" + _cam_token + "].");
     while (_capture)
@@ -98,3 +137,6 @@ private:
   std::mutex     _mtx;
   bool           _capture;
 };
+
+
+
