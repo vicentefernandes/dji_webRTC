@@ -220,6 +220,9 @@ cb_need_data (GstElement *appsrc,
   auto img = dji->get_next_frame();
   size = img.height*img.width*3;
 
+
+  g_print("%dx%d", img.width, img.height);
+
   //Mat frame(img.height, img.width, CV_8UC3, img.rawData.data(), img.width*3);
   //cvtColor(frame, frame, COLOR_RGB2BGR);
 
@@ -276,7 +279,7 @@ create_receiver_entry (SoupWebsocketConnection * connection)
   receiver_entry->pipeline =
       gst_parse_launch ("webrtcbin name=webrtcbin stun-server=stun://"
       STUN_SERVER " "
-      "appsrc name=mysource ! videorate ! video/x-raw,width=1280,height=720,framerate=25/1 ! videoconvert ! queue max-size-buffers=1 ! x264enc bitrate=10000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue max-size-time=100000000 ! h264parse ! "
+      "appsrc name=mysource ! videorate ! video/x-raw,width=1920,height=1080,framerate=25/1 ! videoconvert ! queue max-size-buffers=1 ! x264enc bitrate=10000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue max-size-time=100000000 ! h264parse ! "
       "rtph264pay config-interval=1 name=payloader ! "
       "application/x-rtp,media=video,encoding-name=H264,payload="
       RTP_PAYLOAD_TYPE " ! webrtcbin. ", &error);
@@ -296,8 +299,8 @@ create_receiver_entry (SoupWebsocketConnection * connection)
       g_object_set(G_OBJECT(myappsrc), "caps",
                  gst_caps_new_simple("video/x-raw",
                                      "format", G_TYPE_STRING, "RGB",
-                                     "width", G_TYPE_INT, 1280,
-                                     "height", G_TYPE_INT, 720,
+                                     "width", G_TYPE_INT, 1920,
+                                     "height", G_TYPE_INT, 1080,
                                      "framerate", GST_TYPE_FRACTION, 0, 25,
                                      NULL),
                  NULL);
