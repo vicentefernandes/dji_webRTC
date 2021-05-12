@@ -53,14 +53,31 @@ public:
     std::this_thread::sleep_for(std::chrono::seconds(timeout_secs));
   }
 
+  void startCapture2(uint timeout_secs = 1){
+    auto mainCamResult = _vehicle->advancedSensing->startMainCameraStream();
+    if(!mainCamResult)
+    {
+      cout << "Failed to open Main Camera" << endl;
+      exit(0);
+    }
+  }
+
+
   void stopCapture(uint timeout_secs = 6){
     _capture = false;
     std::this_thread::sleep_for(std::chrono::seconds(timeout_secs));
   }
 
   CameraRGBImage get_next_frame(){
-    const std::lock_guard<std::mutex> lock(_mtx);
+    ////const std::lock_guard<std::mutex> lock(_mtx);
     return _current_img_rgb;
+  };
+
+  CameraRGBImage get_next_frame2(){
+    if(_vehicle->advancedSensing->newMainCameraImageReady()){
+      _vehicle->advancedSensing->getMainCameraImage(_current_img_rgb);
+    }
+      return _current_img_rgb;
   };
 
 private:

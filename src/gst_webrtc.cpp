@@ -241,7 +241,7 @@ cb_need_data (GstElement *appsrc,
 
 
   GST_BUFFER_PTS (buffer) = timestamp;
-  GST_BUFFER_DURATION (buffer) = gst_util_uint64_scale_int (1, GST_SECOND, 25);
+  GST_BUFFER_DURATION (buffer) = gst_util_uint64_scale_int (1, GST_SECOND, 60);
 
   timestamp += GST_BUFFER_DURATION (buffer);
 
@@ -279,7 +279,7 @@ create_receiver_entry (SoupWebsocketConnection * connection)
   receiver_entry->pipeline =
       gst_parse_launch ("webrtcbin name=webrtcbin stun-server=stun://"
       STUN_SERVER " "
-      "appsrc name=mysource ! videorate ! video/x-raw,width=1920,height=1080,framerate=25/1 ! videoconvert ! queue max-size-buffers=1 ! x264enc bitrate=10000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue max-size-time=100000000 ! h264parse ! "
+      "appsrc name=mysource ! videorate ! video/x-raw,width=1920,height=1080,framerate=60/1 ! videoconvert ! queue max-size-buffers=1 ! omxh264enc bitrate=1000000  preset-level=1 qp-range=15,30:5,20:-1,-1 ! video/x-h264,stream-format=byte-stream ! queue max-size-time=10000 min-threshold-time=10000 ! h264parse ! "
       "rtph264pay config-interval=1 name=payloader ! "
       "application/x-rtp,media=video,encoding-name=H264,payload="
       RTP_PAYLOAD_TYPE " ! webrtcbin. ", &error);
@@ -301,7 +301,7 @@ create_receiver_entry (SoupWebsocketConnection * connection)
                                      "format", G_TYPE_STRING, "RGB",
                                      "width", G_TYPE_INT, 1920,
                                      "height", G_TYPE_INT, 1080,
-                                     "framerate", GST_TYPE_FRACTION, 0, 25,
+                                     "framerate", GST_TYPE_FRACTION, 60, 1,
                                      NULL),
                  NULL);
   
@@ -309,7 +309,12 @@ create_receiver_entry (SoupWebsocketConnection * connection)
   
     g_object_set (G_OBJECT (myappsrc),
         "stream-type", 0,
-        "format", GST_FORMAT_TIME, NULL);
+        "max-latency", 10,
+   ///     "format", GST_FORMAT_BUFFERS, 
+        "is-live", true,
+    ///    "block", true,
+        "format", GST_FORMAT_TIME,
+         NULL);
         
         
         
